@@ -12,7 +12,14 @@ App para registrar gastos desde el teléfono, basada en el sistema de seguimient
 ## Estructura del proyecto
 
 - `Registro finanzas personales.xlsx` — Excel original con historial de registros e inversiones
-- `app/` — App web progresiva (PWA) para el teléfono (próximamente)
+- `app/` — App web progresiva (PWA) para el teléfono (en desarrollo)
+
+## Roadmap
+
+- [ ] PWA con registro de gastos en < 30 segundos
+- [ ] Selector de categoría y subcategoría
+- [ ] Resumen del mes en pantalla principal
+- [ ] Sincronización con Google Sheets
 
 ## Categorías
 
