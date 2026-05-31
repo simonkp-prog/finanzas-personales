@@ -846,6 +846,7 @@ function getMesConRegistros() {
 }
 
 function renderRegistros() {
+  try {
   const actual = getMesActual();
   if (!mesSelReg) mesSelReg = { ...getMesConRegistros() };
   const ms = mesSelReg;
@@ -854,7 +855,7 @@ function renderRegistros() {
   document.getElementById('mes-nav-reg-next').disabled = ms.mes === actual.mes && ms.año === actual.año;
 
   const todos   = getRegistros();
-  const del_mes = todos.filter(r => r.mesSueldo.mes === ms.mes && r.mesSueldo.año === ms.año);
+  const del_mes = todos.filter(r => r.mesSueldo && r.mesSueldo.mes === ms.mes && r.mesSueldo.año === ms.año);
   del_mes.sort((a, b) => b.fecha.localeCompare(a.fecha));
 
   const ingresos = del_mes.filter(r => r.tipo === 'ingreso').reduce((s, r) => s + r.monto, 0);
@@ -870,7 +871,6 @@ function renderRegistros() {
   document.getElementById('registros-lista-full').innerHTML = del_mes.map(r => {
     const desc = r.descripcion || r.subcategoria || r.categoria || '—';
     const meta = [r.categoria, r.subcategoria].filter(Boolean).join(' › ');
-    const safeDesc = desc.replace(/'/g, "\\'");
     return `<div class="reg-item">
       <div style="flex:1;min-width:0">
         <div class="reg-desc">${desc}</div>
@@ -883,6 +883,9 @@ function renderRegistros() {
       </div>
     </div>`;
   }).join('');
+  } catch(e) {
+    document.getElementById('registros-lista-full').innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`;
+  }
 }
 
 function desktopRight(name) {
