@@ -80,6 +80,7 @@ function procesarCorreosBanco() {
 
   const reglas = [
     { query: 'from:transferencias@bci.cl',                    parser: parsearBCI          },
+    { query: 'from:contacto@bci.cl',                          parser: parsearBCITarjeta   },
     { query: 'from:serviciodetransferencias@bancochile.cl',   parser: parsearBancoChile   },
     { query: 'from:noreply@correo.bancoestado.cl',            parser: parsearBancoEstado  },
   ];
@@ -177,6 +178,34 @@ function parsearBancoEstado(body, emailDate) {
     id, fecha, descripcion, monto,
     tipo: 'ingreso',
     categoria: categorizarIngreso(descripcion),
+    subcategoria: ''
+  };
+}
+
+function parsearBCITarjeta(body, emailDate) {
+  // "Realizaste un(a) compra en comercio nacional/internacional con tu tarjeta de débito/crédito"
+  if (!/compra en comercio/i.test(body)) return null;
+
+  const monto = parsearMonto(body, /Monto[^$\d]*\$?([\d.,]+)/i);
+  if (!monto) return null;
+
+  const fecha = parsearFecha(body, /Fecha[^\d]*(\d{2}\/\d{2}\/\d{4})/i)
+             || formatearFecha(emailDate);
+  const hora  = (body.match(/Hora[^\d]*(\d{2}:\d{2})/i) || [])[1] || '';
+  const comercio = (body.match(/Comercio\s*[\n\r]+([^\n\r]+)/i) || [])[1]
+                || (body.match(/Comercio\s+([^\n\r]+)/i) || [])[1] || '';
+
+  // ID único: fecha + hora + monto
+  const idBase = fecha.replace(/-/g, '') + hora.replace(':', '') + monto;
+  const id = 'bci_td_' + idBase;
+
+  return {
+    id,
+    fecha,
+    descripcion: comercio.trim(),
+    monto,
+    tipo: 'egreso',
+    categoria: 'Gastos del mes',
     subcategoria: ''
   };
 }
