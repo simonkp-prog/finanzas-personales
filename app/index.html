@@ -100,6 +100,9 @@
     input[inputmode="numeric"]::-webkit-outer-spin-button,
     input[inputmode="numeric"]::-webkit-inner-spin-button { -webkit-appearance: none; }
 
+    /* Ocultar elementos solo-desktop en móvil */
+    .desktop-sidebar, .desktop-left-header { display: none; }
+
     /* ── Desktop layout ── */
     @media (min-width: 900px) {
       body { max-width: 100%; flex-direction: row; background: #f1f5f9; min-height: 100dvh; }
@@ -130,6 +133,8 @@
         border-bottom: 1px solid rgba(255,255,255,0.07);
         letter-spacing: -0.3px;
       }
+      .desktop-sidebar { display: flex; flex-direction: column; }
+      .desktop-left-header { display: block; }
       .sidebar-logo-accent { color: #4ade80; }
       .sidebar-mes {
         font-size: 11px; font-weight: 500; color: #64748b; margin-top: 4px;
@@ -207,6 +212,10 @@
         display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
       }
       .resumen-bottom-grid .card { margin-bottom: 0; }
+
+      /* Gráfico más grande */
+      .donut-wrap { gap: 24px; align-items: center; }
+      .legend-val { font-size: 16px; }
 
       .mes-nav { border-radius: 10px; margin-bottom: 18px; }
       .save-btn { border-radius: 10px; font-size: 15px; padding: 13px; }
@@ -613,7 +622,7 @@
     <div class="card" id="chart-card">
       <div class="card-label">Distribución de gastos</div>
       <div class="donut-wrap">
-        <canvas id="donut-canvas" width="130" height="130"></canvas>
+        <canvas id="donut-canvas" width="200" height="200"></canvas>
         <div class="donut-legend" id="donut-legend"></div>
       </div>
     </div>
@@ -1026,7 +1035,7 @@ function drawDonut(data) {
   const canvas = document.getElementById('donut-canvas');
   const ctx = canvas.getContext('2d');
   const dpr = window.devicePixelRatio || 1;
-  const size = 130;
+  const size = isDesktop() ? 200 : 130;
   canvas.width  = size * dpr; canvas.height = size * dpr;
   canvas.style.width = size + 'px'; canvas.style.height = size + 'px';
   ctx.scale(dpr, dpr);
