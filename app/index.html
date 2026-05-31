@@ -548,7 +548,8 @@
 
   <div class="config-card">
     <h3>Estado</h3>
-    <p id="estado-text" style="margin-bottom:0;font-size:13px;color:#6b7280"></p>
+    <p id="estado-text" style="margin-bottom:0;font-size:13px;color:#6b7280;margin-bottom:14px"></p>
+    <button class="config-btn" style="background:#fee2e2;color:#dc2626;font-weight:700" onclick="confirmarBorrarTodo()">🗑 Borrar todos los registros</button>
   </div>
 
 </div>
@@ -786,6 +787,14 @@ function closeConfirm(e) {
 
 function doDelete() {
   if (!deletingId) return;
+  if (deletingId === '__all__') {
+    localStorage.setItem('registros', JSON.stringify([]));
+    document.getElementById('confirm-overlay').style.display = 'none';
+    deletingId = null;
+    showToast('🗑 Todos los registros borrados');
+    renderConfig();
+    return;
+  }
   const list = getRegistros().filter(r => r.id !== deletingId);
   localStorage.setItem('registros', JSON.stringify(list));
   document.getElementById('confirm-overlay').style.display = 'none';
@@ -1169,6 +1178,13 @@ function saveBudgets() {
   });
   localStorage.setItem('budgets', JSON.stringify(budgets));
   showToast('✓ Presupuestos guardados');
+}
+
+// ── Borrar todo ──
+function confirmarBorrarTodo() {
+  deletingId = '__all__';
+  document.getElementById('confirm-desc').textContent = 'Se borrarán todos los registros del teléfono. El Google Sheet no se modifica.';
+  document.getElementById('confirm-overlay').style.display = 'flex';
 }
 
 // ── Import ──
