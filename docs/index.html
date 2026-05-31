@@ -538,6 +538,14 @@
   </div>
 
   <div class="config-card">
+    <h3>Importar registros</h3>
+    <p>Selecciona el archivo <strong>importar_registros.json</strong> para cargar tu historial del Excel.</p>
+    <input type="file" id="import-file" accept=".json" style="display:none" onchange="importarJSON(this)">
+    <button class="config-btn primary" onclick="document.getElementById('import-file').click()">📂 Seleccionar archivo JSON</button>
+    <div class="sync-note" id="import-note"></div>
+  </div>
+
+  <div class="config-card">
     <h3>Estado</h3>
     <p id="estado-text" style="margin-bottom:0;font-size:13px;color:#6b7280"></p>
   </div>
@@ -1129,6 +1137,45 @@ function saveBudgets() {
   });
   localStorage.setItem('budgets', JSON.stringify(budgets));
   showToast('✓ Presupuestos guardados');
+}
+
+// ── Import ──
+function importarJSON(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const nuevos = JSON.parse(e.target.result);
+      if (!Array.isArray(nuevos)) throw new Error('Formato inválido');
+
+      const existentes = getRegistros();
+      const idsExistentes = new Set(existentes.map(r => r.fecha + r.monto + r.tipo));
+      let importados = 0;
+
+      for (const r of nuevos) {
+        const key = r.fecha + r.monto + r.tipo;
+        if (!idsExistentes.has(key)) {
+          existentes.push({ ...r, sincronizado: false });
+          idsExistentes.add(key);
+          importados++;
+        }
+      }
+
+      localStorage.setItem('registros', JSON.stringify(existentes));
+      document.getElementById('import-note').textContent = `✓ ${importados} registros importados`;
+      showToast(`✓ ${importados} registros importados`);
+      renderConfig();
+
+      // Sincronizar con Sheets si hay URL
+      const cfg = getConfig();
+      if (cfg.sheetsUrl) syncPending();
+    } catch(err) {
+      document.getElementById('import-note').textContent = '⚠ Error al leer el archivo';
+    }
+  };
+  reader.readAsText(file);
+  input.value = '';
 }
 
 function saveConfig() {
