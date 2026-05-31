@@ -213,11 +213,15 @@
       }
       .resumen-bottom-grid .card { margin-bottom: 0; }
 
-      /* Gráfico ocupa ancho completo */
-      #chart-card .donut-wrap { flex-direction: column; gap: 16px; }
-      #chart-card #donut-canvas { width: 100% !important; height: unset !important; aspect-ratio: 1; display: block; }
-      #chart-card .donut-legend { flex-direction: row; flex-wrap: wrap; gap: 12px 24px; }
-      .legend-val { font-size: 15px; }
+      /* Chart card: ancho completo, fuera de la grilla de 2 col */
+      .resumen-bottom-grid {
+        display: flex; flex-direction: column; gap: 14px;
+      }
+      #chart-card .donut-wrap { flex-direction: row; align-items: center; gap: 40px; }
+      #chart-card .donut-legend { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+      .legend-item { gap: 10px; }
+      .legend-name { font-size: 14px; }
+      .legend-val  { font-size: 18px; }
 
       .mes-nav { border-radius: 10px; margin-bottom: 18px; }
       .save-btn { border-radius: 10px; font-size: 15px; padding: 13px; }
@@ -1037,10 +1041,9 @@ function drawDonut(data) {
   const canvas = document.getElementById('donut-canvas');
   const ctx = canvas.getContext('2d');
   const dpr = window.devicePixelRatio || 1;
-  const size = isDesktop() ? 600 : 130;
+  const size = isDesktop() ? 280 : 130;
   canvas.width = size * dpr; canvas.height = size * dpr;
-  if (isDesktop()) { canvas.style.width = ''; canvas.style.height = ''; }
-  else { canvas.style.width = size + 'px'; canvas.style.height = size + 'px'; }
+  canvas.style.width = size + 'px'; canvas.style.height = size + 'px';
   ctx.scale(dpr, dpr);
 
   const total = data.reduce((s, d) => s + d.value, 0);
