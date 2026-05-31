@@ -214,8 +214,8 @@
       .resumen-bottom-grid .card { margin-bottom: 0; }
 
       /* Gráfico ocupa ancho completo */
-      #chart-card .donut-wrap { flex-direction: column; gap: 16px; align-items: stretch; }
-      #chart-card .donut-wrap canvas { align-self: center; }
+      #chart-card .donut-wrap { flex-direction: column; gap: 16px; }
+      #chart-card #donut-canvas { width: 100% !important; height: auto !important; display: block; }
       #chart-card .donut-legend { flex-direction: row; flex-wrap: wrap; gap: 12px 24px; }
       .legend-val { font-size: 15px; }
 
@@ -1037,10 +1037,15 @@ function drawDonut(data) {
   const canvas = document.getElementById('donut-canvas');
   const ctx = canvas.getContext('2d');
   const dpr = window.devicePixelRatio || 1;
-  const cardW = canvas.closest('.card')?.clientWidth || 0;
-  const size = isDesktop() ? (cardW > 100 ? cardW - 32 : 380) : 130;
-  canvas.width  = size * dpr; canvas.height = size * dpr;
-  canvas.style.width = size + 'px'; canvas.style.height = size + 'px';
+  if (isDesktop()) {
+    const size = 600;
+    canvas.width = size * dpr; canvas.height = size * dpr;
+    canvas.style.width = ''; canvas.style.height = '';
+  } else {
+    const size = 130;
+    canvas.width = size * dpr; canvas.height = size * dpr;
+    canvas.style.width = size + 'px'; canvas.style.height = size + 'px';
+  }
   ctx.scale(dpr, dpr);
 
   const total = data.reduce((s, d) => s + d.value, 0);
