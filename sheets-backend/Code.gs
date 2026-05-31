@@ -1,6 +1,17 @@
 function doPost(e) {
   try {
     const data = JSON.parse(e.postData.contents);
+
+    // Guardar presupuestos
+    if (data._type === 'budgets') {
+      const sheet = getBudgetsSheet();
+      sheet.clearContents();
+      sheet.appendRow(['Clave', 'Valor']);
+      Object.entries(data.budgets).forEach(([k, v]) => sheet.appendRow([k, v]));
+      return json({ok: true});
+    }
+
+    // Guardar registro normal
     const sheet = getSheet();
     if (sheet.getLastRow() === 0) addHeader(sheet);
     const ms = data.mesSueldo || {};
@@ -21,22 +32,33 @@ function doPost(e) {
 function doGet(e) {
   try {
     const sheet = getSheet();
-    if (sheet.getLastRow() <= 1) return json([]);
-    const rows = sheet.getRange(2, 1, sheet.getLastRow() - 1, 11).getValues();
-    const registros = rows
-      .filter(r => r[0])
-      .map(r => ({
-        id:           String(r[0]),
-        fecha:        formatFecha(r[1]),
-        descripcion:  r[2] || '',
-        categoria:    r[3] || '',
-        subcategoria: r[4] || '',
-        monto:        Number(r[5] || r[6]) || 0,
-        tipo:         r[5] ? 'ingreso' : 'egreso',
-        mesSueldo:    { mes: (Number(r[9]) || 1) - 1, año: Number(r[10]) || 0 },
-        sincronizado: true
-      }));
-    return json(registros);
+    let registros = [];
+    if (sheet.getLastRow() > 1) {
+      const rows = sheet.getRange(2, 1, sheet.getLastRow() - 1, 11).getValues();
+      registros = rows
+        .filter(r => r[0])
+        .map(r => ({
+          id:           String(r[0]),
+          fecha:        formatFecha(r[1]),
+          descripcion:  r[2] || '',
+          categoria:    r[3] || '',
+          subcategoria: r[4] || '',
+          monto:        Number(r[5] || r[6]) || 0,
+          tipo:         r[5] ? 'ingreso' : 'egreso',
+          mesSueldo:    { mes: (Number(r[9]) || 1) - 1, año: Number(r[10]) || 0 },
+          sincronizado: true
+        }));
+    }
+
+    // Leer presupuestos
+    const budgets = {};
+    const bSheet = getBudgetsSheet();
+    if (bSheet.getLastRow() > 1) {
+      const bRows = bSheet.getRange(2, 1, bSheet.getLastRow() - 1, 2).getValues();
+      bRows.filter(r => r[0]).forEach(r => { budgets[String(r[0])] = Number(r[1]); });
+    }
+
+    return json({ registros, budgets });
   } catch(e) {
     return json({error: e.message});
   }
@@ -45,6 +67,11 @@ function doGet(e) {
 function getSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   return ss.getSheetByName('Registros') || ss.insertSheet('Registros');
+}
+
+function getBudgetsSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  return ss.getSheetByName('Presupuestos') || ss.insertSheet('Presupuestos');
 }
 
 function addHeader(sheet) {

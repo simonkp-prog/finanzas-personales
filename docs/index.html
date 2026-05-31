@@ -102,51 +102,116 @@
 
     /* ── Desktop layout ── */
     @media (min-width: 900px) {
-      body { max-width: 100%; flex-direction: column; background: #f1f5f9; }
+      body { max-width: 100%; flex-direction: row; background: #f1f5f9; min-height: 100dvh; }
 
-      .header {
-        max-width: 100%; padding: 14px 40px;
-        display: flex; align-items: center; justify-content: space-between;
-      }
-      .header-nav { display: flex; gap: 4px; }
-      .header-nav-btn {
-        padding: 8px 18px; border-radius: 8px; border: none;
-        background: none; font-size: 14px; font-weight: 500;
-        color: var(--gray-500); cursor: pointer; transition: all 0.15s;
-      }
-      .header-nav-btn.active { background: var(--green-light); color: var(--green); font-weight: 700; }
-
+      .header { display: none; }
       .bottom-nav { display: none; }
 
       .desktop-layout {
         display: grid;
-        grid-template-columns: 400px 1fr;
-        gap: 24px;
-        padding: 24px 40px 40px;
-        max-width: 1400px;
-        margin: 0 auto;
+        grid-template-columns: 210px 360px 1fr;
+        min-height: 100dvh;
         width: 100%;
       }
 
+      /* ── Sidebar ── */
+      .desktop-sidebar {
+        background: #1e293b;
+        display: flex;
+        flex-direction: column;
+        position: sticky;
+        top: 0;
+        height: 100dvh;
+        overflow-y: auto;
+      }
+      .sidebar-logo {
+        padding: 26px 20px 18px;
+        font-size: 18px; font-weight: 800; color: white;
+        border-bottom: 1px solid rgba(255,255,255,0.07);
+        letter-spacing: -0.3px;
+      }
+      .sidebar-logo-accent { color: #4ade80; }
+      .sidebar-mes {
+        font-size: 11px; font-weight: 500; color: #64748b; margin-top: 4px;
+      }
+      .sidebar-nav { padding: 12px 10px; display: flex; flex-direction: column; gap: 2px; }
+      .sidebar-nav-section {
+        font-size: 10px; font-weight: 700; color: #475569;
+        text-transform: uppercase; letter-spacing: 0.07em;
+        padding: 14px 10px 5px;
+      }
+      .sidebar-nav-btn {
+        display: flex; align-items: center; gap: 10px;
+        padding: 10px 12px; border-radius: 8px; border: none;
+        background: none; color: #94a3b8; font-size: 13px;
+        font-weight: 500; cursor: pointer; transition: all 0.15s;
+        text-align: left; width: 100%;
+      }
+      .sidebar-nav-btn:hover { background: rgba(255,255,255,0.06); color: #e2e8f0; }
+      .sidebar-nav-btn.active { background: rgba(74,222,128,0.13); color: #4ade80; font-weight: 600; }
+      .sidebar-nav-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+      /* ── Left panel ── */
+      .desktop-left {
+        background: white;
+        border-right: 1px solid #e2e8f0;
+        padding: 26px 22px 32px;
+        overflow-y: auto;
+        height: 100dvh;
+        position: sticky;
+        top: 0;
+      }
+      .desktop-left-header { margin-bottom: 20px; }
+      .desktop-left-header h2 { font-size: 17px; font-weight: 700; color: #111827; }
+
+      /* ── Right panel ── */
+      .desktop-right {
+        padding: 26px 30px 40px;
+        overflow-y: auto;
+        height: 100dvh;
+        position: sticky;
+        top: 0;
+        background: #f8fafc;
+      }
+      .desktop-right-header {
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: 20px;
+      }
+      .desktop-right-header h2 { font-size: 20px; font-weight: 700; color: #111827; }
+
       .screen { display: none !important; padding: 0; overflow: visible; }
-
-      #screen-registro.active,
-      #screen-resumen.active,
-      #screen-config.active { display: block !important; }
-
-      .desktop-left  { min-width: 0; }
-      .desktop-right { min-width: 0; }
-
-      /* Always show registro on left, resumen on right on desktop */
       .desktop-left  #screen-registro { display: block !important; }
       .desktop-right #screen-resumen  { display: block !important; }
       .desktop-right #screen-config   { display: block !important; }
 
-      .card { margin-bottom: 18px; }
-
-      .confirm-overlay .confirm-box {
-        max-width: 440px; margin: auto;
+      /* Cards */
+      .card {
+        border-radius: 12px; margin-bottom: 14px; padding: 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid #eef2f7;
       }
+
+      /* Totals */
+      .totals { gap: 10px; }
+      .total-item { padding: 14px 12px; border-radius: 10px; }
+      .total-item .t-value { font-size: 20px; }
+
+      /* Tables side by side */
+      .resumen-tables-grid {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;
+      }
+      .resumen-tables-grid .card { margin-bottom: 0; }
+
+      /* Chart + cats side by side */
+      .resumen-bottom-grid {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+      }
+      .resumen-bottom-grid .card { margin-bottom: 0; }
+
+      .mes-nav { border-radius: 10px; margin-bottom: 18px; }
+      .save-btn { border-radius: 10px; font-size: 15px; padding: 13px; }
+      .toast { bottom: 24px; }
+      .confirm-overlay { align-items: center; }
+      .confirm-overlay .confirm-box { max-width: 440px; width: 100%; margin: auto; }
     }
 
     .text-input {
@@ -416,7 +481,30 @@
 </div>
 
 <div class="desktop-layout">
+
+<!-- ══ SIDEBAR ══ -->
+<aside class="desktop-sidebar">
+  <div class="sidebar-logo">
+    <span class="sidebar-logo-accent">💰</span> Finanzas
+    <div class="sidebar-mes" id="mes-label-desktop">—</div>
+  </div>
+  <div class="sidebar-nav">
+    <div class="sidebar-nav-section">Vistas</div>
+    <button class="sidebar-nav-btn active" id="snav-resumen" onclick="desktopRight('resumen')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+      Resumen
+    </button>
+    <button class="sidebar-nav-btn" id="snav-config" onclick="desktopRight('config')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
+      Configuración
+    </button>
+  </div>
+</aside>
+
 <div class="desktop-left">
+<div class="desktop-left-header">
+  <h2>Nuevo registro</h2>
+</div>
 <!-- ══ REGISTRO ══ -->
 <div id="screen-registro" class="screen active">
   <div id="edit-banner" class="edit-banner" style="display:none">
@@ -489,27 +577,29 @@
     </div>
   </div>
 
-  <div class="card">
-    <div class="card-label">Resumen ingresos</div>
-    <table class="resumen-table" id="tabla-ingresos"></table>
-  </div>
-
-  <div class="card">
-    <div class="card-label">Resumen egresos</div>
-    <table class="resumen-table" id="tabla-egresos"></table>
-  </div>
-
-  <div class="card" id="chart-card">
-    <div class="card-label">Distribución de gastos</div>
-    <div class="donut-wrap">
-      <canvas id="donut-canvas" width="130" height="130"></canvas>
-      <div class="donut-legend" id="donut-legend"></div>
+  <div class="resumen-tables-grid">
+    <div class="card">
+      <div class="card-label">Resumen ingresos</div>
+      <table class="resumen-table" id="tabla-ingresos"></table>
+    </div>
+    <div class="card">
+      <div class="card-label">Resumen egresos</div>
+      <table class="resumen-table" id="tabla-egresos"></table>
     </div>
   </div>
 
-  <div class="card">
-    <div class="card-label">Por categoría vs presupuesto</div>
-    <div id="cats-resumen"></div>
+  <div class="resumen-bottom-grid">
+    <div class="card" id="chart-card">
+      <div class="card-label">Distribución de gastos</div>
+      <div class="donut-wrap">
+        <canvas id="donut-canvas" width="130" height="130"></canvas>
+        <div class="donut-legend" id="donut-legend"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-label">Por categoría vs presupuesto</div>
+      <div id="cats-resumen"></div>
+    </div>
   </div>
 
   <div class="card">
@@ -676,15 +766,15 @@ function showScreen(name) {
 function desktopRight(name) {
   document.getElementById('screen-resumen').classList.toggle('active', name === 'resumen');
   document.getElementById('screen-config' ).classList.toggle('active', name === 'config');
-  document.querySelectorAll('.header-nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById(`hnav-${name}`).classList.add('active');
+  document.querySelectorAll('.sidebar-nav-btn').forEach(b => b.classList.remove('active'));
+  const snavBtn = document.getElementById(`snav-${name}`);
+  if (snavBtn) snavBtn.classList.add('active');
   if (name === 'resumen') renderResumen();
   if (name === 'config')  renderConfig();
 }
 
 function initDesktop() {
   if (!isDesktop()) return;
-  document.getElementById('header-nav').style.display = 'flex';
   document.getElementById('screen-registro').classList.add('active');
   desktopRight('resumen');
 }
@@ -962,18 +1052,30 @@ async function fetchFromSheets() {
     try { data = JSON.parse(text); } catch(_) {
       showToast('⚠ Respuesta inválida del script'); console.log('Respuesta:', text.substring(0,200)); return;
     }
-    if (!Array.isArray(data)) {
-      showToast('⚠ ' + (data.error || 'Error en el script')); return;
-    }
+    if (data.error) { showToast('⚠ ' + data.error); return; }
+
+    // Soporte formato nuevo {registros, budgets} y formato antiguo [...]
+    const registros = Array.isArray(data) ? data : (data.registros || []);
+    const budgets   = Array.isArray(data) ? null : (data.budgets || null);
+
     const local = getRegistros();
     const ids   = new Set(local.map(r => r.id));
     let nuevos  = 0;
-    for (const r of data) {
+    for (const r of registros) {
       if (!ids.has(r.id)) { local.push(r); ids.add(r.id); nuevos++; }
     }
-    if (nuevos > 0) {
-      localStorage.setItem('registros', JSON.stringify(local));
+    if (nuevos > 0) localStorage.setItem('registros', JSON.stringify(local));
+
+    if (budgets && Object.keys(budgets).length > 0) {
+      localStorage.setItem('budgets', JSON.stringify(budgets));
+    }
+
+    if (nuevos > 0 && budgets && Object.keys(budgets).length > 0) {
+      showToast(`↓ ${nuevos} registros + presupuestos`);
+    } else if (nuevos > 0) {
       showToast(`↓ ${nuevos} registros nuevos`);
+    } else if (budgets && Object.keys(budgets).length > 0) {
+      showToast('↓ Presupuestos actualizados');
     } else {
       showToast('✓ Todo al día');
     }
@@ -1170,14 +1272,28 @@ function renderBudgetForm() {
   document.getElementById('budget-form').innerHTML = html;
 }
 
-function saveBudgets() {
+async function saveBudgets() {
   const budgets = {};
   document.querySelectorAll('.budget-input').forEach(inp => {
     const val = parseInt(inp.value.replace(/\D/g, ''));
     if (val > 0) budgets[inp.dataset.key] = val;
   });
   localStorage.setItem('budgets', JSON.stringify(budgets));
-  showToast('✓ Presupuestos guardados');
+  showToast('⏳ Guardando presupuestos...');
+  const cfg = getConfig();
+  if (cfg.sheetsUrl) {
+    try {
+      await fetch(cfg.sheetsUrl, {
+        method: 'POST', mode: 'no-cors',
+        body: JSON.stringify({ _type: 'budgets', budgets })
+      });
+      showToast('✓ Presupuestos guardados y sincronizados');
+    } catch(_) {
+      showToast('✓ Guardados (sin conexión)');
+    }
+  } else {
+    showToast('✓ Presupuestos guardados');
+  }
 }
 
 // ── Borrar todo ──
@@ -1245,15 +1361,14 @@ function renderConfig() {
 
 // ── Init ──
 function init() {
-  document.getElementById('mes-label').textContent = 'Mes de sueldo: ' + mesSueldoLabel(new Date());
+  const mesLabel = 'Mes de sueldo: ' + mesSueldoLabel(new Date());
+  document.getElementById('mes-label').textContent = mesLabel;
+  const desktopMes = document.getElementById('mes-label-desktop');
+  if (desktopMes) desktopMes.textContent = mesLabel;
   document.getElementById('fecha-input').value = todayStr();
   renderCatChips();
   initDesktop();
-  window.addEventListener('resize', () => {
-    const hn = document.getElementById('header-nav');
-    if (isDesktop()) { hn.style.display = 'flex'; initDesktop(); }
-    else { hn.style.display = 'none'; }
-  });
+  window.addEventListener('resize', () => { if (isDesktop()) initDesktop(); });
 }
 
 init();
