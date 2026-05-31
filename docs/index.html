@@ -946,9 +946,16 @@ async function fetchFromSheets() {
   const cfg = getConfig();
   if (!cfg.sheetsUrl) return;
   try {
+    showToast('⏳ Sincronizando...');
     const res  = await fetch(cfg.sheetsUrl, { redirect: 'follow' });
-    const data = await res.json();
-    if (!Array.isArray(data)) return;
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch(_) {
+      showToast('⚠ Respuesta inválida del script'); console.log('Respuesta:', text.substring(0,200)); return;
+    }
+    if (!Array.isArray(data)) {
+      showToast('⚠ ' + (data.error || 'Error en el script')); return;
+    }
     const local = getRegistros();
     const ids   = new Set(local.map(r => r.id));
     let nuevos  = 0;
@@ -957,9 +964,13 @@ async function fetchFromSheets() {
     }
     if (nuevos > 0) {
       localStorage.setItem('registros', JSON.stringify(local));
-      showToast(`↓ ${nuevos} registros nuevos desde Sheets`);
+      showToast(`↓ ${nuevos} registros nuevos`);
+    } else {
+      showToast('✓ Todo al día');
     }
-  } catch(_) {}
+  } catch(err) {
+    showToast('⚠ Error: ' + err.message); console.error(err);
+  }
 }
 
 function renderResumen() {
