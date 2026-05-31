@@ -251,6 +251,22 @@
     .progress-bar { height: 8px; background: var(--gray-100); border-radius: 4px; overflow: hidden; }
     .progress-fill { height: 100%; border-radius: 4px; transition: width 0.4s; }
 
+    /* Mes navigator */
+    .mes-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      background: white; border-radius: 12px; padding: 10px 16px;
+      margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .mes-nav-btn {
+      background: var(--gray-100); border: none; border-radius: 8px;
+      width: 36px; height: 36px; font-size: 18px; cursor: pointer;
+      color: var(--gray-700); transition: background 0.15s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .mes-nav-btn:active { background: var(--gray-200); }
+    .mes-nav-btn:disabled { color: var(--gray-300); cursor: default; background: none; }
+    .mes-nav-label { font-size: 16px; font-weight: 700; color: var(--gray-900); }
+
     /* Resumen table */
     .resumen-table { width: 100%; border-collapse: collapse; font-size: 14px; }
     .resumen-table th {
@@ -448,8 +464,14 @@
 <!-- ══ RESUMEN ══ -->
 <div id="screen-resumen" class="screen">
 
+  <div class="mes-nav">
+    <button class="mes-nav-btn" onclick="cambiarMes(-1)">&#8592;</button>
+    <span class="mes-nav-label" id="mes-nav-label">—</span>
+    <button class="mes-nav-btn" id="mes-nav-next" onclick="cambiarMes(1)">&#8594;</button>
+  </div>
+
   <div class="card">
-    <div class="card-label">Este mes de sueldo</div>
+    <div class="card-label">Resumen del mes</div>
     <div class="totals">
       <div class="total-item ingresos">
         <div class="t-label">Ingresos</div>
@@ -585,6 +607,9 @@ const CAT_LIGHT = {
 
 let state = { tipo: 'egreso', categoria: null, subcategoria: null };
 
+// Mes seleccionado en resumen (null = mes actual)
+let mesSel = null; // { mes, año }
+
 // ── Mes de sueldo ──
 function lastBizDay(year, month) {
   let d = new Date(year, month + 1, 0);
@@ -634,7 +659,7 @@ function showScreen(name) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById(`screen-${name}`).classList.add('active');
   document.getElementById(`nav-${name}`).classList.add('active');
-  if (name === 'resumen') renderResumen();
+  if (name === 'resumen') { mesSel = null; renderResumen(); }
   if (name === 'config')  renderConfig();
 }
 
@@ -659,6 +684,20 @@ function showToast(msg) {
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── Navegación de meses ──
+function getMesActual() { return mesSueldo(new Date()); }
+
+function cambiarMes(delta) {
+  const actual = getMesActual();
+  if (!mesSel) mesSel = { ...actual };
+  let m = mesSel.mes + delta;
+  let y = mesSel.año;
+  if (m > 11) { m = 0; y++; }
+  if (m < 0)  { m = 11; y--; }
+  mesSel = { mes: m, año: y };
+  renderResumen();
 }
 
 // ── Registro ──
@@ -895,8 +934,14 @@ function drawDonut(data) {
 
 // ── Resumen ──
 function renderResumen() {
-  const now = new Date();
-  const ms  = mesSueldo(now);
+  const actual = getMesActual();
+  if (!mesSel) mesSel = { ...actual };
+  const ms = mesSel;
+
+  // Actualizar navegador
+  document.getElementById('mes-nav-label').textContent = `${MESES[ms.mes]} ${ms.año}`;
+  const esActual = ms.mes === actual.mes && ms.año === actual.año;
+  document.getElementById('mes-nav-next').disabled = esActual;
   const todos   = getRegistros();
   const del_mes = todos.filter(r => r.mesSueldo.mes === ms.mes && r.mesSueldo.año === ms.año);
   const budgets = getBudgets();
