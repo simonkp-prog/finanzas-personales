@@ -468,6 +468,7 @@
     <button class="mes-nav-btn" onclick="cambiarMes(-1)">&#8592;</button>
     <span class="mes-nav-label" id="mes-nav-label">—</span>
     <button class="mes-nav-btn" id="mes-nav-next" onclick="cambiarMes(1)">&#8594;</button>
+    <button class="mes-nav-btn" onclick="fetchFromSheets().then(()=>renderResumen())" title="Actualizar">↻</button>
   </div>
 
   <div class="card">
@@ -667,7 +668,7 @@ function showScreen(name) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById(`screen-${name}`).classList.add('active');
   document.getElementById(`nav-${name}`).classList.add('active');
-  if (name === 'resumen') { mesSel = null; renderResumen(); }
+  if (name === 'resumen') { mesSel = null; fetchFromSheets().then(() => renderResumen()); }
   if (name === 'config')  renderConfig();
 }
 
@@ -941,6 +942,26 @@ function drawDonut(data) {
 }
 
 // ── Resumen ──
+async function fetchFromSheets() {
+  const cfg = getConfig();
+  if (!cfg.sheetsUrl) return;
+  try {
+    const res  = await fetch(cfg.sheetsUrl, { redirect: 'follow' });
+    const data = await res.json();
+    if (!Array.isArray(data)) return;
+    const local = getRegistros();
+    const ids   = new Set(local.map(r => r.id));
+    let nuevos  = 0;
+    for (const r of data) {
+      if (!ids.has(r.id)) { local.push(r); ids.add(r.id); nuevos++; }
+    }
+    if (nuevos > 0) {
+      localStorage.setItem('registros', JSON.stringify(local));
+      showToast(`↓ ${nuevos} registros nuevos desde Sheets`);
+    }
+  } catch(_) {}
+}
+
 function renderResumen() {
   const actual = getMesActual();
   if (!mesSel) mesSel = { ...actual };
