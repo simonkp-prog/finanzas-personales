@@ -669,7 +669,7 @@ function showScreen(name) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById(`screen-${name}`).classList.add('active');
   document.getElementById(`nav-${name}`).classList.add('active');
-  if (name === 'resumen') { mesSel = null; fetchFromSheets().then(() => renderResumen()); }
+  if (name === 'resumen') { mesSel = null; renderResumen(); }
   if (name === 'config')  renderConfig();
 }
 
