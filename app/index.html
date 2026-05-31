@@ -179,10 +179,11 @@
       }
       .desktop-right-header h2 { font-size: 20px; font-weight: 700; color: #111827; }
 
+      .bottom-nav { display: none !important; }
       .screen { display: none !important; padding: 0; overflow: visible; }
-      .desktop-left  #screen-registro { display: block !important; }
-      .desktop-right #screen-resumen  { display: block !important; }
-      .desktop-right #screen-config   { display: block !important; }
+      .desktop-left  #screen-registro          { display: block !important; }
+      .desktop-right #screen-resumen.active    { display: block !important; }
+      .desktop-right #screen-config.active     { display: block !important; }
 
       /* Cards */
       .card {
@@ -212,6 +213,13 @@
       .toast { bottom: 24px; }
       .confirm-overlay { align-items: center; }
       .confirm-overlay .confirm-box { max-width: 440px; width: 100%; margin: auto; }
+
+      /* Config buttons: ancho automático en desktop */
+      .config-btn {
+        width: auto; display: inline-block;
+        padding: 10px 24px; font-size: 14px; margin-top: 12px; margin-right: 8px;
+      }
+      .config-card { padding: 20px 22px; }
     }
 
     .text-input {
