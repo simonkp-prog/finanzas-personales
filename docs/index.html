@@ -1037,7 +1037,8 @@ function drawDonut(data) {
   const canvas = document.getElementById('donut-canvas');
   const ctx = canvas.getContext('2d');
   const dpr = window.devicePixelRatio || 1;
-  const size = isDesktop() ? Math.min(canvas.closest('.card').clientWidth - 32, 320) : 130;
+  const cardW = canvas.closest('.card')?.clientWidth || 0;
+  const size = isDesktop() ? (cardW > 100 ? cardW - 32 : 380) : 130;
   canvas.width  = size * dpr; canvas.height = size * dpr;
   canvas.style.width = size + 'px'; canvas.style.height = size + 'px';
   ctx.scale(dpr, dpr);
