@@ -1185,7 +1185,7 @@ function renderResumen() {
   const chartData = Object.keys(CATS_EGRESO).map(cat => ({
     label: cat, value: byCat[cat] || 0, color: CAT_COLORS[cat]
   }));
-  drawDonut(chartData);
+  requestAnimationFrame(() => drawDonut(chartData));
 
   // Legend
   const totalEg = chartData.reduce((s,d) => s+d.value, 0);
