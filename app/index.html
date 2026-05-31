@@ -683,6 +683,8 @@
     <button class="config-btn" style="background:#fee2e2;color:#dc2626;font-weight:700" onclick="confirmarBorrarTodo()">🗑 Borrar todos los registros</button>
   </div>
 
+</div><!-- /screen-config -->
+
 <!-- ══ REGISTROS ══ -->
 <div id="screen-registros" class="screen">
   <div class="mes-nav">
@@ -694,8 +696,6 @@
     <div class="card-label" id="reg-resumen-label">—</div>
     <div id="registros-lista-full"></div>
   </div>
-</div>
-
 </div>
 
 </div><!-- /desktop-right -->
@@ -835,9 +835,19 @@ function cambiarMesReg(dir) {
   renderRegistros();
 }
 
+function getMesConRegistros() {
+  const todos = getRegistros();
+  if (!todos.length) return getMesActual();
+  return todos.reduce((last, r) => {
+    const m = r.mesSueldo;
+    if (m.año > last.año || (m.año === last.año && m.mes > last.mes)) return m;
+    return last;
+  }, todos[0].mesSueldo);
+}
+
 function renderRegistros() {
   const actual = getMesActual();
-  if (!mesSelReg) mesSelReg = { ...actual };
+  if (!mesSelReg) mesSelReg = { ...getMesConRegistros() };
   const ms = mesSelReg;
 
   document.getElementById('mes-nav-reg-label').textContent = `${MESES[ms.mes]} ${ms.año}`;
