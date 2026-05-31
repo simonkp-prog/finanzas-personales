@@ -1,4 +1,4 @@
-const CACHE = 'finanzas-v2';
+const CACHE = 'finanzas-v3';
 const BASE = '/finanzas-personales';
 const ASSETS = [BASE + '/', BASE + '/index.html', BASE + '/manifest.json'];
 
