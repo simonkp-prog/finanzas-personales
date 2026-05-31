@@ -1,5 +1,6 @@
-const CACHE = 'finanzas-v1';
-const ASSETS = ['/', '/index.html', '/manifest.json'];
+const CACHE = 'finanzas-v2';
+const BASE = '/finanzas-personales';
+const ASSETS = [BASE + '/', BASE + '/index.html', BASE + '/manifest.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));

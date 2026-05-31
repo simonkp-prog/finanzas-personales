@@ -213,9 +213,11 @@
       }
       .resumen-bottom-grid .card { margin-bottom: 0; }
 
-      /* Gráfico más grande */
-      .donut-wrap { gap: 24px; align-items: center; }
-      .legend-val { font-size: 16px; }
+      /* Gráfico ocupa ancho completo */
+      #chart-card .donut-wrap { flex-direction: column; gap: 16px; align-items: stretch; }
+      #chart-card .donut-wrap canvas { align-self: center; }
+      #chart-card .donut-legend { flex-direction: row; flex-wrap: wrap; gap: 12px 24px; }
+      .legend-val { font-size: 15px; }
 
       .mes-nav { border-radius: 10px; margin-bottom: 18px; }
       .save-btn { border-radius: 10px; font-size: 15px; padding: 13px; }
@@ -1035,7 +1037,7 @@ function drawDonut(data) {
   const canvas = document.getElementById('donut-canvas');
   const ctx = canvas.getContext('2d');
   const dpr = window.devicePixelRatio || 1;
-  const size = isDesktop() ? 200 : 130;
+  const size = isDesktop() ? Math.min(canvas.closest('.card').clientWidth - 32, 320) : 130;
   canvas.width  = size * dpr; canvas.height = size * dpr;
   canvas.style.width = size + 'px'; canvas.style.height = size + 'px';
   ctx.scale(dpr, dpr);
@@ -1405,7 +1407,7 @@ init();
 </script>
 <script>
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
+    navigator.serviceWorker.register('/finanzas-personales/sw.js').catch(() => {});
   }
 </script>
 </body>

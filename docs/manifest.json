@@ -2,7 +2,7 @@
   "name": "Finanzas Personales",
   "short_name": "Finanzas",
   "description": "Registro de gastos personales",
-  "start_url": "/",
+  "start_url": "/finanzas-personales/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#16a34a",
