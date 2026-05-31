@@ -1037,19 +1037,15 @@ function drawDonut(data) {
   const canvas = document.getElementById('donut-canvas');
   const ctx = canvas.getContext('2d');
   const dpr = window.devicePixelRatio || 1;
-  if (isDesktop()) {
-    const size = 600;
-    canvas.width = size * dpr; canvas.height = size * dpr;
-    canvas.style.width = ''; canvas.style.height = '';
-  } else {
-    const size = 130;
-    canvas.width = size * dpr; canvas.height = size * dpr;
-    canvas.style.width = size + 'px'; canvas.style.height = size + 'px';
-  }
+  const size = isDesktop() ? 600 : 130;
+  canvas.width = size * dpr; canvas.height = size * dpr;
+  if (isDesktop()) { canvas.style.width = ''; canvas.style.height = ''; }
+  else { canvas.style.width = size + 'px'; canvas.style.height = size + 'px'; }
   ctx.scale(dpr, dpr);
 
   const total = data.reduce((s, d) => s + d.value, 0);
-  const cx = size / 2, cy = size / 2, r = 55, inner = 33;
+  const cx = size / 2, cy = size / 2;
+  const r = size * 0.42, inner = size * 0.25;
 
   ctx.clearRect(0, 0, size, size);
 
