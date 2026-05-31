@@ -213,9 +213,9 @@
       }
       .resumen-bottom-grid .card { margin-bottom: 0; }
 
-      /* Chart card: ancho completo, fuera de la grilla de 2 col */
+      /* Chart + cats lado a lado */
       .resumen-bottom-grid {
-        display: flex; flex-direction: column; gap: 14px;
+        display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
       }
       #chart-card .donut-wrap { flex-direction: row; align-items: center; gap: 48px; }
       #chart-card .donut-legend { flex: 1; display: flex; flex-direction: column; gap: 20px; }
