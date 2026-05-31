@@ -216,10 +216,23 @@
 
       /* Config buttons: ancho automático en desktop */
       .config-btn {
-        width: auto; display: inline-block;
+        width: auto !important; display: inline-block !important;
         padding: 10px 24px; font-size: 14px; margin-top: 12px; margin-right: 8px;
       }
-      .config-card { padding: 20px 22px; }
+      .config-card { padding: 20px 22px; max-width: 680px; }
+
+      /* Budget form: 2 columnas en desktop */
+      #budget-form .budget-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        column-gap: 32px;
+      }
+      #budget-form .budget-group-title {
+        grid-column: 1 / -1;
+      }
+      .budget-row label { flex: 0 0 auto; max-width: 160px; }
+      .budget-row { gap: 8px; }
+      .budget-row .budget-input { width: 110px; }
     }
 
     .text-input {
