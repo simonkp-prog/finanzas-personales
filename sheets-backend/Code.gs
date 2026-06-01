@@ -90,7 +90,7 @@ function procesarCorreosBanco() {
     const threads = GmailApp.search(regla.query + ' -label:' + LABEL_NOMBRE);
     threads.forEach(function(thread) {
       thread.getMessages().forEach(function(msg) {
-        const body = msg.getPlainBody();
+        const body = getBody(msg);
         const record = regla.parser(body, msg.getDate());
         if (record && !idsExistentes.has(record.id)) {
           agregarRegistro(sheet, record);
@@ -166,20 +166,22 @@ function parsearBancoChile(body, emailDate) {
 }
 
 function parsearBancoEstado(body, emailDate) {
+  if (!body) return null;
   if (!/Has recibido una Transferencia/i.test(body)) return null;
 
   const monto = parsearMonto(body, /Monto[^$\d]*\$?([\d.,]+)/i);
   if (!monto) return null;
 
-  // Fecha y hora: DD/MM/YYYY HH:MM:SS
-  const fecha = parsearFecha(body, /Fecha y hora\s*[\n\r]+(\d{2}\/\d{2}\/\d{4})/i)
+  const fecha = parsearFecha(body, /Fecha y hora[\s\t]+(\d{2}\/\d{2}\/\d{4})/i)
              || parsearFecha(body, /(\d{2}\/\d{2}\/\d{4})/)
              || formatearFecha(emailDate);
   const nTrans = (body.match(/N[°º]\s*transacci[oó]n[^\d]*(\d+)/i) || [])[1] || '';
   const id = 'bce_' + (nTrans || Utilities.formatDate(emailDate, 'America/Santiago', 'yyyyMMddHHmmss'));
 
-  const mensaje     = campo(body, 'Mensaje');
-  const remitente   = (body.match(/cliente\s+([^\n\r]+)/i) || [])[1] || '';
+  const mensajeRaw  = campo(body, 'Mensaje');
+  const mensaje     = esTextoValido(mensajeRaw) ? mensajeRaw : '';
+  const remitenteRaw = (body.match(/cliente\s+([^\n\r,]+)/i) || [])[1] || '';
+  const remitente   = esTextoValido(remitenteRaw) ? remitenteRaw.trim() : '';
   const descripcion = (mensaje || remitente).trim();
 
   return {
@@ -226,7 +228,7 @@ function parsearSantander(body, emailDate) {
 }
 
 function parsearBCITarjeta(body, emailDate) {
-  // "Realizaste un(a) compra en comercio nacional/internacional con tu tarjeta de débito/crédito"
+  if (!body) return null;
   if (!/compra en comercio/i.test(body)) return null;
 
   const monto = parsearMonto(body, /Monto[^$\d]*\$?([\d.,]+)/i);
@@ -235,24 +237,47 @@ function parsearBCITarjeta(body, emailDate) {
   const fecha = parsearFecha(body, /Fecha[^\d]*(\d{2}\/\d{2}\/\d{4})/i)
              || formatearFecha(emailDate);
   const hora  = (body.match(/Hora[^\d]*(\d{2}:\d{2})/i) || [])[1] || '';
-  const comercio = campo(body, 'Comercio');
 
-  // ID único: fecha + hora + monto
+  // "Comercio" como campo de tabla: requiere 2+ espacios/tabs después (no "en comercio nacional")
+  const comercio = (body.match(/(?:^|\n)\s*Comercio[\t ]{2,}([^\n\r]+)/im) || [])[1]
+                || (body.match(/Comercio\s{2,}([^\n\r]+)/i) || [])[1]
+                || '';
+
   const idBase = fecha.replace(/-/g, '') + hora.replace(':', '') + monto;
   const id = 'bci_td_' + idBase;
 
   return {
-    id,
-    fecha,
+    id, fecha,
     descripcion: comercio.trim(),
-    monto,
-    tipo: 'egreso',
-    categoria: 'Gastos del mes',
-    subcategoria: ''
+    monto, tipo: 'egreso',
+    categoria: 'Gastos del mes', subcategoria: ''
   };
 }
 
 // ── Helpers ───────────────────────────────
+
+// Limpia HTML y devuelve texto plano
+function stripHtml(html) {
+  if (!html) return '';
+  return html.replace(/<[^>]+>/g, ' ')
+             .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&')
+             .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+             .replace(/\s+/g, ' ').trim();
+}
+
+// Devuelve el cuerpo del mensaje como texto (plain o HTML stripeado)
+function getBody(msg) {
+  const plain = msg.getPlainBody();
+  if (plain && plain.trim().length > 50) return plain;
+  return stripHtml(msg.getBody());
+}
+
+// Valida que un texto sea útil (no footer ni texto genérico)
+function esTextoValido(texto) {
+  if (!texto || texto.length < 2 || texto.length > 100) return false;
+  const footerPatterns = /imprimir|garantía legal|respondas|seguridad|modificar|preferencias|Fecha y hora/i;
+  return !footerPatterns.test(texto);
+}
 
 // Extrae el valor que sigue a una etiqueta, sea en la misma línea o en la siguiente
 function campo(body, etiqueta) {
@@ -351,7 +376,7 @@ function testParsers() {
     const threads = GmailApp.search(regla.query, 0, 20);
     threads.forEach(function(thread) {
       thread.getMessages().forEach(function(msg) {
-        const body   = msg.getPlainBody();
+        const body   = getBody(msg);
         const fecha  = msg.getDate();
         const asunto = msg.getSubject();
         const record = regla.parser(body, fecha);
