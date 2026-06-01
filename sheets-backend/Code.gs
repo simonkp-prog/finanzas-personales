@@ -105,6 +105,7 @@ function procesarCorreosBanco() {
 // ── Parsers por banco ──────────────────────
 
 function parsearBCI(body, emailDate) {
+  if (!body) return null;
   // Ignorar confirmación de recepción en cuenta Copec Pay (es traspaso propio)
   if (/Has recibido una transferencia/i.test(body) && /Copec\s*Pay/i.test(body)) return null;
 
@@ -190,7 +191,7 @@ function parsearBancoEstado(body, emailDate) {
 }
 
 function parsearSantander(body, emailDate) {
-  // "nuestro cliente [NOMBRE] realizó una transferencia a tu cuenta"
+  if (!body) return null;
   if (!/realiz[oó] una transferencia a tu cuenta/i.test(body)) return null;
 
   const monto = parsearMonto(body, /Monto transferido\s*\$?\s*([\d.,]+)/i)
@@ -201,12 +202,20 @@ function parsearSantander(body, emailDate) {
              || parsearFecha(body, /(\d{2}\/\d{2}\/\d{4})/)
              || formatearFecha(emailDate);
 
-  const remitente   = (body.match(/cliente\s+([A-ZÁÉÍÓÚÑ][^\n\r]+?)\s+realiz[oó]/i) || [])[1] || '';
-  const comentario  = campo(body, 'Comentario');
+  // El nombre puede ocupar 1 o 2 líneas antes de "realizó"
+  const remitenteMatch = body.match(/nuestro cliente\s+([\s\S]+?)\s+realiz[oó]/i);
+  const remitente = remitenteMatch ? remitenteMatch[1].replace(/\s+/g, ' ').trim() : '';
+
+  // Comentario: solo usarlo si es corto y no contiene texto del footer
+  const comentarioRaw = campo(body, 'Comentario');
+  const comentario = (comentarioRaw && comentarioRaw.length < 80 && !/imprimir|nota|seguridad/i.test(comentarioRaw))
+    ? comentarioRaw : '';
+
   const descripcion = (comentario || remitente).trim();
 
-  // ID con fecha + monto (Santander no siempre incluye N° comprobante visible)
-  const id = 'san_' + fecha.replace(/-/g,'') + '_' + monto;
+  // ID único: fecha + monto + timestamp del email
+  const ts = Utilities.formatDate(emailDate, 'America/Santiago', 'yyyyMMddHHmmss');
+  const id = 'san_' + ts + '_' + monto;
 
   return {
     id, fecha, descripcion, monto,
