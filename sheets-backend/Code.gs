@@ -320,6 +320,70 @@ function agregarRegistro(sheet, record) {
 }
 
 // ══════════════════════════════════════════
+//  TEST — ejecutar desde el editor para revisar
+//  sin escribir nada en el Sheet
+// ══════════════════════════════════════════
+
+function testParsers() {
+  const LABEL_NOMBRE = 'finanzas-procesado';
+  const reglas = [
+    { query: 'from:transferencias@bci.cl',                    parser: parsearBCI,        banco: 'BCI transferencia'    },
+    { query: 'from:contacto@bci.cl',                          parser: parsearBCITarjeta, banco: 'BCI tarjeta débito'   },
+    { query: 'from:serviciodetransferencias@bancochile.cl',   parser: parsearBancoChile, banco: 'Banco de Chile'       },
+    { query: 'from:noreply@correo.bancoestado.cl',            parser: parsearBancoEstado,banco: 'BancoEstado'          },
+    { query: 'from:mensajeria@santander.cl',                  parser: parsearSantander,  banco: 'Santander'            },
+  ];
+
+  var resultados = [];
+  var ignorados  = [];
+
+  reglas.forEach(function(regla) {
+    // Busca los últimos 20 correos de cada banco (ya procesados o no)
+    const threads = GmailApp.search(regla.query, 0, 20);
+    threads.forEach(function(thread) {
+      thread.getMessages().forEach(function(msg) {
+        const body   = msg.getPlainBody();
+        const fecha  = msg.getDate();
+        const asunto = msg.getSubject();
+        const record = regla.parser(body, fecha);
+        if (record) {
+          resultados.push({
+            banco:      regla.banco,
+            asunto:     asunto,
+            tipo:       record.tipo,
+            monto:      record.monto,
+            fecha:      record.fecha,
+            desc:       record.descripcion,
+            categoria:  record.categoria,
+            id:         record.id
+          });
+        } else {
+          ignorados.push(regla.banco + ' | ' + asunto);
+        }
+      });
+    });
+  });
+
+  Logger.log('══════════════════════════════════');
+  Logger.log('REGISTROS QUE SE CREARÍAN (' + resultados.length + ')');
+  Logger.log('══════════════════════════════════');
+  resultados.forEach(function(r) {
+    Logger.log(
+      '[' + r.tipo.toUpperCase() + '] ' + r.fecha +
+      '  $' + r.monto +
+      '  | ' + r.desc +
+      '  | Cat: ' + r.categoria +
+      '  | Banco: ' + r.banco +
+      '  | ID: ' + r.id
+    );
+  });
+
+  Logger.log('');
+  Logger.log('CORREOS IGNORADOS (' + ignorados.length + ')');
+  ignorados.forEach(function(s) { Logger.log('  ' + s); });
+}
+
+// ══════════════════════════════════════════
 //  Trigger — ejecutar UNA VEZ desde el editor
 // ══════════════════════════════════════════
 
