@@ -111,17 +111,23 @@ function parsearBCI(body, emailDate) {
   const esIngreso = /Has recibido una transferencia/i.test(body) && !esEgreso;
   if (!esEgreso && !esIngreso) return null;
 
-  const monto = parsearMonto(body, /Monto\s*(?:transferido|recibido)[^$\d]*\$?([\d.,]+)/i);
+  const monto = parsearMonto(body, /Monto\s*(?:transferido|recibido)\s*[\s\S]{0,5}\$?([\d.,]+)/i)
+             || parsearMonto(body, /\$\s*([\d.,]+)/);
   if (!monto) return null;
 
-  const fecha  = parsearFecha(body, /Fecha\s*(?:de\s*abono|de\s*la\s*transferencia)[^\d]*(\d{2}\/\d{2}\/\d{4})/i)
-              || formatearFecha(emailDate);
+  const fecha = parsearFecha(body, /Fecha\s*(?:de\s*abono|de\s*la\s*transferencia)\s*[\s\S]{0,5}(\d{2}\/\d{2}\/\d{4})/i)
+             || parsearFecha(body, /(\d{2}\/\d{2}\/\d{4})/)
+             || formatearFecha(emailDate);
+
   const comprobante = (body.match(/N[uú]mero de comprobante[^\d]*(\d+)/i) || [])[1] || '';
   const id = 'bci_' + (comprobante || Utilities.formatDate(emailDate, 'America/Santiago', 'yyyyMMddHHmmss'));
 
-  const mensaje     = (body.match(/Mensaje\s*[\n\r]+([^\n\r]+)/i) || [])[1] || '';
-  const destinatario = (body.match(/Nombre del destinatario\s*[\n\r]+([^\n\r]+)/i) || [])[1] || '';
-  const descripcion = (mensaje || destinatario).trim();
+  // Mensaje puede estar en línea separada o misma línea con espacios/tabs
+  const mensaje      = campo(body, 'Mensaje');
+  const destinatario = campo(body, 'Nombre del destinatario');
+  // Para ingresos, extraer nombre del remitente: "de [NOMBRE] hacia tu cuenta"
+  const remitente    = (body.match(/Has recibido.*?de\s+([^\n\r]+?)\s+hacia/i) || [])[1] || '';
+  const descripcion  = (mensaje || destinatario || remitente).trim();
 
   return {
     id, fecha, descripcion, monto,
@@ -145,7 +151,7 @@ function parsearBancoChile(body, emailDate) {
   const comprobante = (body.match(/N[uú]mero de comprobante[^\d]*(\d+)/i) || [])[1] || '';
   const id = 'bch_' + (comprobante || Utilities.formatDate(emailDate, 'America/Santiago', 'yyyyMMddHHmmss'));
 
-  const mensaje     = (body.match(/Mensaje\s*[\n\r]+([^\n\r]+)/i) || [])[1] || '';
+  const mensaje     = campo(body, 'Mensaje');
   const remitente   = (body.match(/que\s+([A-ZÁÉÍÓÚÑ][^,]+)\s+le ha transferido/i) || [])[1] || '';
   const descripcion = (mensaje || remitente).trim();
 
@@ -170,8 +176,8 @@ function parsearBancoEstado(body, emailDate) {
   const nTrans = (body.match(/N[°º]\s*transacci[oó]n[^\d]*(\d+)/i) || [])[1] || '';
   const id = 'bce_' + (nTrans || Utilities.formatDate(emailDate, 'America/Santiago', 'yyyyMMddHHmmss'));
 
-  const mensaje   = (body.match(/Mensaje\s*[\n\r]+([^\n\r]+)/i) || [])[1] || '';
-  const remitente = (body.match(/cliente\s+([^\n\r]+)/i) || [])[1] || '';
+  const mensaje     = campo(body, 'Mensaje');
+  const remitente   = (body.match(/cliente\s+([^\n\r]+)/i) || [])[1] || '';
   const descripcion = (mensaje || remitente).trim();
 
   return {
@@ -192,8 +198,7 @@ function parsearBCITarjeta(body, emailDate) {
   const fecha = parsearFecha(body, /Fecha[^\d]*(\d{2}\/\d{2}\/\d{4})/i)
              || formatearFecha(emailDate);
   const hora  = (body.match(/Hora[^\d]*(\d{2}:\d{2})/i) || [])[1] || '';
-  const comercio = (body.match(/Comercio\s*[\n\r]+([^\n\r]+)/i) || [])[1]
-                || (body.match(/Comercio\s+([^\n\r]+)/i) || [])[1] || '';
+  const comercio = campo(body, 'Comercio');
 
   // ID único: fecha + hora + monto
   const idBase = fecha.replace(/-/g, '') + hora.replace(':', '') + monto;
@@ -211,6 +216,13 @@ function parsearBCITarjeta(body, emailDate) {
 }
 
 // ── Helpers ───────────────────────────────
+
+// Extrae el valor que sigue a una etiqueta, sea en la misma línea o en la siguiente
+function campo(body, etiqueta) {
+  const esc = etiqueta.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const m = body.match(new RegExp(esc + '\\s*[:\\t ]*\\s*([^\\n\\r]+)', 'i'));
+  return m ? m[1].trim() : '';
+}
 
 function parsearMonto(body, regex) {
   const m = body.match(regex);
