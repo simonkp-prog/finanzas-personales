@@ -83,6 +83,7 @@ function procesarCorreosBanco() {
     { query: 'from:contacto@bci.cl',                          parser: parsearBCITarjeta   },
     { query: 'from:serviciodetransferencias@bancochile.cl',   parser: parsearBancoChile   },
     { query: 'from:noreply@correo.bancoestado.cl',            parser: parsearBancoEstado  },
+    { query: 'from:mensajeria@santander.cl',                  parser: parsearSantander    },
   ];
 
   reglas.forEach(function(regla) {
@@ -179,6 +180,33 @@ function parsearBancoEstado(body, emailDate) {
   const mensaje     = campo(body, 'Mensaje');
   const remitente   = (body.match(/cliente\s+([^\n\r]+)/i) || [])[1] || '';
   const descripcion = (mensaje || remitente).trim();
+
+  return {
+    id, fecha, descripcion, monto,
+    tipo: 'ingreso',
+    categoria: categorizarIngreso(descripcion),
+    subcategoria: ''
+  };
+}
+
+function parsearSantander(body, emailDate) {
+  // "nuestro cliente [NOMBRE] realizó una transferencia a tu cuenta"
+  if (!/realiz[oó] una transferencia a tu cuenta/i.test(body)) return null;
+
+  const monto = parsearMonto(body, /Monto transferido\s*\$?\s*([\d.,]+)/i)
+             || parsearMonto(body, /\$\s*([\d.,]+)/);
+  if (!monto) return null;
+
+  const fecha = parsearFecha(body, /con fecha\s+(\d{2}\/\d{2}\/\d{4})/i)
+             || parsearFecha(body, /(\d{2}\/\d{2}\/\d{4})/)
+             || formatearFecha(emailDate);
+
+  const remitente   = (body.match(/cliente\s+([A-ZÁÉÍÓÚÑ][^\n\r]+?)\s+realiz[oó]/i) || [])[1] || '';
+  const comentario  = campo(body, 'Comentario');
+  const descripcion = (comentario || remitente).trim();
+
+  // ID con fecha + monto (Santander no siempre incluye N° comprobante visible)
+  const id = 'san_' + fecha.replace(/-/g,'') + '_' + monto;
 
   return {
     id, fecha, descripcion, monto,
