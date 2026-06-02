@@ -372,8 +372,8 @@ function testParsers() {
   var ignorados  = [];
 
   reglas.forEach(function(regla) {
-    // Busca los últimos 20 correos de cada banco (ya procesados o no)
-    const threads = GmailApp.search(regla.query, 0, 20);
+    // Busca correos desde marzo 2026 (ya procesados o no)
+    const threads = GmailApp.search(regla.query + ' after:2026/03/01', 0, 50);
     threads.forEach(function(thread) {
       thread.getMessages().forEach(function(msg) {
         const body   = getBody(msg);
